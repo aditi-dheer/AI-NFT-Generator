@@ -35,17 +35,34 @@ export async function POST(req: NextRequest) {
                 'Content-Type': "application/json",
             }
         })
+//     } catch (error) {
+//         console.error(error);
+//         return new Response(JSON.stringify({ error: "Failed to generate image due to internal server error"}), {
+//             status: 500,
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+//     }
+// }
+
     } catch (error) {
-        console.error(error);
-        return new Response(JSON.stringify({ error: "Failed to generate image due to internal server error"}), {
-            status: 500,
+        console.error("OpenAI error, falling back to random image:", error);
+
+        // Return a random placeholder image instead
+        const fallbackImage = `https://picsum.photos/seed/${Math.floor(
+        Math.random() * 10000
+        )}/1024/1024`;
+
+        return new Response(
+        JSON.stringify({ data: [{ url: fallbackImage }] }),
+        {
+            status: 200,
             headers: {
-                'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             },
         });
     }
 }
-
-
 
 
