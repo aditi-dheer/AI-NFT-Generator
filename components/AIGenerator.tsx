@@ -2,10 +2,10 @@
 
 import { client } from "@/app/client"
 import { useState } from "react";
-import { ConnectButton, MediaRenderer, useActiveAccount, useReadContract } from "thirdweb/react"
+import { ConnectButton, MediaRenderer, NFTMedia, useActiveAccount, useReadContract } from "thirdweb/react"
 import { NFTCollection } from "./NFTCollections";
 import { getNFTs } from "thirdweb/extensions/erc721";
-import { contract } from "../utils/contracts";
+import { contract } from "../utils/contract";
 import { upload } from "thirdweb/storage";
 
 export const AIGenerator= () => {
@@ -43,14 +43,38 @@ export const AIGenerator= () => {
 
             const imageBlob = await fetch(data.data[0].url).then((res) => res.blob());
             const file = new File([imageBlob], "image.png", { type: "image/png" });
+
+
             const imageUri = await upload({
                 client: client,
                 files: [file],
         });
         setGeneratedImage(imageUri);
         setIsGenerating(false);
+        setisMinting(true);
+        const mintRes = await fetch("/api/mint", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                nftImage: imageUri,
+                address: account?.address,
+            }),
+        });
+        
+        if(!mintRes.ok) {
+            throw new Error("Failed to Mint NFT");
+        }
+
+        alert("NFT Minted Successfully");
         } catch (error) {
             console.error(error);
+        } finally {
+            setImagePrompt("");
+            setisMinting(false);
+            setIsGenerating(false);
+            refetch();
         }
     };
     if (account) {
