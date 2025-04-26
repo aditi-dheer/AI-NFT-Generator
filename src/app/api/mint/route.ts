@@ -54,9 +54,7 @@ export async function POST(req:NextRequest) {
             return new NextResponse(
                 JSON.stringify({ error: `Engine error: ${status} – ${bodyText}` }),
                 { status }
-            ); // delete this return entire thing
-            // throw new Error("Failed to mint NFT");
-
+            );
         }
 
         return new NextResponse(JSON.stringify({ message: "NFT was minted successfully" }));
