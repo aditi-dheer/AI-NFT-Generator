@@ -6,6 +6,7 @@ import { ConnectButton, MediaRenderer, useActiveAccount, useReadContract } from 
 import { NFTCollection } from "./NFTCollections";
 import { getNFTs } from "thirdweb/extensions/erc721";
 import { contract } from "../utils/contracts";
+import { upload } from "thirdweb/storage";
 
 export const AIGenerator= () => {
     const account = useActiveAccount();
@@ -22,6 +23,36 @@ export const AIGenerator= () => {
         }
     )
 
+    const handleGenerateAndMint = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsGenerating(true);
+        try{
+            const res = await fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ imagePrompt }),
+            });
+
+            if (!res.ok) {
+                throw new Error("Failed to generate image");
+            }
+
+            const data = await res.json();
+
+            const imageBlob = await fetch(data.data[0].url).then((res) => res.blob());
+            const file = new File([imageBlob], "image.png", { type: "image/png" });
+            const imageUri = await upload({
+                client: client,
+                files: [file],
+        });
+        setGeneratedImage(imageUri);
+        setIsGenerating(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
     if (account) {
         return(
             <div style={{
@@ -62,7 +93,7 @@ export const AIGenerator= () => {
                     )}
                 </div>
                 <div>
-                    <form>
+                    <form onSubmit={handleGenerateAndMint}>
                         {!generatedImage || isMinting ? (
                             <div style={{
                                 display: "flex",
